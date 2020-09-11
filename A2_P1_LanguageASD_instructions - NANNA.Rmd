@@ -75,7 +75,7 @@ Load necessary libraries : what will you need?
 - e.g. something to plot with
 
 ```{r Load Libraries, include = FALSE}
-
+tidyverse, purrr, ggplot, MuMIn, lmerTest
 ```
 
 ### Define your working directory and load the data
@@ -88,7 +88,9 @@ If you opened this Rmd file outside of a project, you will need some code to fin
 - Load the data you saved last time (use read_csv(fileName))
 
 ```{r Load Data, include = FALSE}
-
+df<- read.csv("autism_df.csv")
+#removing x 
+df[,1] <- NULL
 ```
 
 ### Characterize the participants (Exercise 1)
@@ -100,10 +102,43 @@ Make sure the variables are in the right format.
 Describe the characteristics of the two groups of participants and whether the two groups are well matched.
 
 ```{r descriptive stats, include = FALSE}
+#exploring the format of the variables
+str(df)
+
+#Mutating variables ##The split and map diesn't work!!! Ask Esben maybe
+df <- df %>% 
+  mutate(SUBJ = as.factor(SUBJ),
+         VISIT = as.factor(VISIT),
+         Gender = as.factor(Gender),
+         Diagnosis = as.factor(Diagnosis),
+         Ethnicity = as.factor(Ethnicity)
+      ) 
+#checking the difference by "splitting"/grouping Td from ASD 
+df %>%
+  split(df$Diagnosis) %>%
+  map(summary)
+
+
 
 ```
 
-The sample included mostly young (<20) white males ...
+**The sample included mostly young (<20) white males ... **
+
+ASD: 
+n = 176
+age = mean: 43.17 months, min: 18.7, max: 62.40
+Gender = F: 26, M: 150
+Ethnicity = White: 130, African American: 12, Latino: 12, Lebanese: 6, White/Asian: 6, Bangladeshi: 5, other: 5
+Difference between verbalIQ1 and verbalIQ?? - from visit 1
+
+TD:
+n = 196
+age = mean: 30.6 months, min: 18.07, max: 45.07
+Gender = F:30, M: 160
+Ethnicity = White: 190, Asian: 6
+
+
+
 
 [REPORT THE RESULTS]
 
@@ -117,13 +152,56 @@ Remember to plot the data first and then to run a statistical test.
 - Which variable(s) should be included as fixed factors?
 - Which variable(s) should be included as random factors?
 
+```{r}
+df <- df %>% 
+  mutate(VISIT = as.integer(VISIT))
+```
+
+
+```{r}
+#Visualizing interaction for model using package "interactions"
+interact_plot(m0, pred = VISIT, modx = Diagnosis)
+```
+
+
+
 ```{r ex2, include = FALSE}
 
+#Plotting Mean length utterance for all visits for each diagnosis in linear
+df %>%
+  ggplot(aes(x = VISIT, y = CHI_MLU, color = Diagnosis)) +
+    geom_point() +
+    geom_smooth(method = "lm")
+
+#useless boxplot  
+#df %>%
+#  ggplot(aes(x = VISIT, y = CHI_MLU, color = Diagnosis)) +
+#    geom_boxplot()
+
+
+#Plotting Mean length utterance for all visits for each diagnosis in growth
+qplot(VISIT,CHI_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,2)")
+
+qplot(VISIT,CHI_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,3)")
+
+ ```
+
+
+```{r}
+#Creating a model
+m0 <- lmerTest::lmer(CHI_MLU ~ VISIT*Diagnosis +(1+Diagnosis|SUBJ), df)
+
+summary(m0)
+
+
 ```
+
+
 
 How would you evaluate whether the model is a good model?
 
 ```{r ex2 evaluate, include = FALSE}
+MuMIn::r.squaredGLMM(m0)
 
 ```
 
@@ -154,7 +232,25 @@ Linguistic development of children MLU is affected by ... [COMPLETE]
 
 ### Hypothesis: Parental MLU changes: i) over time, ii) according to diagnosis
 
+```{r}
+m2 <- lmerTest::lmer(MOT_MLU ~ VISIT*Diagnosis +(1+Diagnosis|SUBJ), df)
+
+summary(m2)
+```
+
+
+
 ```{r ex3, include = FALSE}
+#plotting
+df %>%
+  ggplot(aes(x = VISIT, y = MOT_MLU, color = Diagnosis)) +
+    geom_point(stat='summary') +
+    geom_smooth(method = "lm")
+
+
+#Plotting Mean length utterance for all visits for each diagnosis in growth
+qplot(VISIT,MOT_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,2)")
+
 
 ```
 
