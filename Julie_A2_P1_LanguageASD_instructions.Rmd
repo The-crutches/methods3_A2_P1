@@ -76,6 +76,9 @@ Load necessary libraries : what will you need?
 
 ```{r Load Libraries, include = FALSE}
 
+library(tidyverse)
+library(lme4)
+library(purrr)
 ```
 
 ### Define your working directory and load the data
@@ -88,7 +91,7 @@ If you opened this Rmd file outside of a project, you will need some code to fin
 - Load the data you saved last time (use read_csv(fileName))
 
 ```{r Load Data, include = FALSE}
-
+autism_df <- read_csv("~/Uni stuff/Expmeth3/methods3_A2_P1/autism_df.csv")
 ```
 
 ### Characterize the participants (Exercise 1)
@@ -100,6 +103,20 @@ Make sure the variables are in the right format.
 Describe the characteristics of the two groups of participants and whether the two groups are well matched.
 
 ```{r descriptive stats, include = FALSE}
+
+autism_df[,1] <- NULL
+str(autism_df)
+
+autism_df %>%
+  mutate(SUBJ = (as.factor(SUBJ)),
+         VISIT = (as.factor(VISIT)),
+         Diagnosis = (as.factor(Diagnosis)),
+         Gender = (as.factor(Gender))) %>% 
+  split(autism_df$Diagnosis) %>% 
+  map(summary)
+
+
+
 
 ```
 
