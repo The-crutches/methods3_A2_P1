@@ -1,0 +1,193 @@
+---
+title: "Assignment 2 - Language Development in ASD - Part 1 - Explaining development"
+author: "Studygroup 4"
+date: "11/9/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(include = FALSE)
+```
+
+#CLEAN markdown with 
+#small comments on choises and results are made along the way while the full report can be seen in the attached document.
+
+[See the document here](https://docs.google.com/document/d/1LtrmpRjy1SYCNhrBuOoLZX5uBSWwxAVzhSJ664kV0XU/edit?usp=sharing)
+
+**Loading usefull packages**
+
+```{r, include = TRUE}
+pacman::p_load(tidyverse, purrr, ggplot, MuMIn, lmerTest)
+```
+
+
+**Loading the clean dataframe from last portfolio**
+
+```{r Load Data, include = TRUE}
+df<- read.csv("autism_df.csv")
+#removing x 
+df[,1] <- NULL
+```
+
+**Exploring Participants** 
+
+```{r descriptive stats, include = TRUE}
+#exploring the format of the variables
+str(df)
+
+#Mutating variables
+df <- df %>% 
+  mutate(SUBJ = as.factor(SUBJ),
+         VISIT = as.factor(VISIT),
+         Gender = as.factor(Gender),
+         Diagnosis = as.factor(Diagnosis),
+         Ethnicity = as.factor(Ethnicity)
+      ) 
+#Checking the difference in each condition by "splitting"/grouping Td from ASD 
+df %>%
+  split(df$Diagnosis) %>%
+  map(summary)
+
+```
+
+*REPORT IN DOCS*
+
+# Hypothesis 1: The child's MLU changes: i) over time, ii) according to diagnosis
+
+**Ploting the data**
+```{r}
+#Because visit doesn't makes sence as a factor we transform
+df <- df %>% 
+  mutate(VISIT = as.integer(VISIT))
+```
+
+```{r, include = TRUE}
+#Plotting Mean length utterance for all visits for each diagnosis in linear
+df %>%
+  ggplot(aes(x = VISIT, y = CHI_MLU, color = Diagnosis)) +
+    geom_point(stat='summary') + 
+    geom_smooth(method = "lm") 
+
+```
+
+**Making a model**
+Fixed effect: 
+Random effect: 
+To account for independence, *linear mixed-effects model* is used
+```{r, include = TRUE}
+#Indsæt Julies model
+```
+
+**Assessing the model**
+```{r, include = TRUE}
+#Julie?
+```
+
+Doesn't seem too good yet
+
+**Creating growth models**
+
+*Visualizing  quadratic*
+```{r, include = TRUE}
+qplot(VISIT,CHI_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,2)")
+```
+
+**Quadratic model**
+```{r, include = TRUE}
+#Julie??
+```
+
+*Visualizing cubic*
+```{r, include = TRUE}
+qplot(VISIT,CHI_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,3)")
+```
+
+**Cubic Model**
+```{r, include = TRUE}
+#^3 
+```
+
+
+*Comparing models*
+```{r, include = TRUE}
+#
+```
+
+xx seems to be the best fit.
+
+# Hypothesis 2: The parents's MLU changes: i) over time, ii) according to diagnosis
+
+*Ploting the data*
+
+```{r, include = TRUE}
+#Plotting Mean length utterance for all visits for each diagnosis in linear
+df %>%
+  ggplot(aes(x = VISIT, y = MOT_MLU, color = Diagnosis)) +
+    geom_point(stat='summary') + 
+    geom_smooth(method = "lm") 
+  
+```
+
+*Making a model*
+
+```{r, include = TRUE}
+#Same as above, just switch CHI_MLU with MOT_MLU
+```
+
+*Assessing the model*
+```{r, include = TRUE}
+#
+```
+
+**Creating growth models**
+
+*Visualizing quadratic*
+```{r, include = TRUE}
+qplot(VISIT,MOT_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,2)")
+```
+
+**Quadratic Model**
+```{r, include = TRUE}
+#
+```
+
+
+*Visualizing cubic*
+```{r, include = TRUE}
+qplot(VISIT,MOT_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,3)")
+```
+
+**Cubic Model**
+```{r, include = TRUE}
+#
+```
+
+
+*Comparing models*
+```{r, include = TRUE}
+#
+```
+
+xx seems to be the best fit.
+
+
+#HVAD MANGLER VI??
+- Excercise 4: Adding new variables
+  *Your task now is to figure out how to best describe the children linguistic trajectory. The dataset contains a bunch of additional demographic, cognitive and clinical variables (e.g.verbal and non-verbal IQ). Try them out and identify the statistical models that best describes your data (that is, the children's MLU). Describe how you selected the best model and send the code to run the model to Victor and Byurakn.*
+  
+```{r, include = TRUE}
+#Make a MAXMAXMAX model and see what fits best
+#I'm thinking VerbalIQ, Socialization, ADOS?, nonverbalIQ, types, tokens are nice !
+#Also as we discussed, Gender and Ethnicity are not great to include because of poor representation in both groups
+
+```
+
+In addition to ..., the MLU of the children is also correlated with ...
+Using AIC / nested F-tests as a criterium, we compared models of increasing complexity and found that … [continue]
+
+
+Congrats! You made it to the end :D 
+
