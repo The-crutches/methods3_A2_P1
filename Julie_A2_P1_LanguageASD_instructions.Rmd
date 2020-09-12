@@ -138,7 +138,7 @@ Remember to plot the data first and then to run a statistical test.
 - Which variable(s) should be included as random factors?
 
 ```{r ex2, include = FALSE}
-m0 <- lmerTest::lmer(CHI_MLU ~ Gender + Age +(1+Diagnosis|SUBJ)+
+m0 <- lme4::lmer(CHI_MLU ~ Gender + Age +(1+Diagnosis|SUBJ)+
                        VISIT*Diagnosis,
                       autism_df,
                      REML = FALSE)
@@ -146,7 +146,7 @@ m1 <- lmerTest::lmer(CHI_MLU ~ Gender+(1+Diagnosis|SUBJ)+
                        VISIT*Diagnosis,
                       autism_df,
                      REML = FALSE)
-m2 <- lmerTest::lmer(CHI_MLU ~ VISIT*Diagnosis+(1+Diagnosis|SUBJ),
+m2 <- lmer(CHI_MLU ~ VISIT*Diagnosis+(1+Diagnosis|SUBJ),
                       autism_df,
                      REML = FALSE)
 m3 <- lmerTest::lmer(CHI_MLU ~ Diagnosis+(1+Diagnosis|SUBJ),
@@ -225,8 +225,25 @@ Exciting right? Let's check whether the model is doing an alright job at fitting
 
 ```{r}
 
+test <- lmer(Age ~ Gender+ (1| SUBJ), autism_df, REML = FALSE)
+summary(test)
+
 #Chi square or what?
 
+library(broom)
+
+tidy_test <- tidy(test)
+
+    
+    
+plot(m2)
+
+d$predicted <- predict(fit)   # Save the predicted values
+d$residuals <- residuals(fit)
+
+library(dplyr)
+
+test$predicted <- predict(test)
 ```
 
 Now it's time to report our results.
