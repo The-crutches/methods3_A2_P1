@@ -41,7 +41,7 @@ str(df)
 #Mutating variables
 df <- df %>% 
   mutate(SUBJ = as.factor(SUBJ),
-         VISIT = as.factor(VISIT),
+         #VISIT = as.factor(VISIT),
          Gender = as.factor(Gender),
          Diagnosis = as.factor(Diagnosis),
          Ethnicity = as.factor(Ethnicity)
@@ -78,13 +78,72 @@ Fixed effect:
 Random effect: 
 To account for independence, *linear mixed-effects model* is used
 ```{r, include = TRUE}
-#Indsæt Julies model
+
+#null model
+null_model <- lmerTest::lmer(CHI_MLU ~ 1+(1|SUBJ),
+                      df,
+                     REML = FALSE)
+
+summary(null_model)
+
+m0 <- lmerTest::lmer(CHI_MLU ~ Gender + Age +(1+VISIT|SUBJ)+
+                       VISIT*Diagnosis,
+                      df,
+                     REML = FALSE)
+summary(m0)
+#Age is highly correlated with visit. Therefore, it should be removed. 
+
+m1 <- lmerTest::lmer(CHI_MLU ~ VISIT*Diagnosis+Gender+
+                       (1+VISIT|SUBJ),
+                      df,
+                     REML = FALSE)
+summary(m1)
+# Gender has a high p -value. Let us try without it.
+
+m2 <- lmerTest::lmer(CHI_MLU ~ VISIT*Diagnosis+
+             (1+VISIT|SUBJ),
+                      df,
+                     REML = FALSE)
+summary(m2)
+# Only with the interaction effect
+
+m3 <- lmerTest::lmer(CHI_MLU ~ VISIT+(1+VISIT|SUBJ),
+                      df,
+                     REML = FALSE)
+
+summary(m3)
+# VISIT as the only predictor
+
+
+
 ```
 
 **Assessing the model**
 ```{r, include = TRUE}
-#Julie?
+
+anova(m1, m2, m3)
+# m2 has the best AIC and BIC score. Furthermore, the anova tells us that m2 is significantly different from m3 whereas m1 is not significantly different. Therefore, we choose to exclude gender and stay with m2.
+
+
+
+# How about the R squared value?
+r.squaredGLMM(m1)
+r.squaredGLMM(m2)
+r.squaredGLMM(m3)
+
+
+# We have chosen m2 as our model and now we want to see if this model is better than the null model
+anova(m2, null_model)
 ```
+Our model is significantly better than the null model. 
+
+**Checking assumptions**
+```{r}
+plot(m2)
+qqnorm(residuals(m2))
+
+```
+
 
 Doesn't seem too good yet
 
@@ -93,30 +152,60 @@ Doesn't seem too good yet
 *Visualizing  quadratic*
 ```{r, include = TRUE}
 qplot(VISIT,CHI_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,2)")
+
 ```
 
 **Quadratic model**
 ```{r, include = TRUE}
-#Julie??
+growth <- lmerTest::lmer(CHI_MLU ~ VISIT*Diagnosis+I(VISIT^2)+(1+I(VISIT^2)|SUBJ),
+                      df,
+                     REML = FALSE)
 ```
 
-*Visualizing cubic*
-```{r, include = TRUE}
-qplot(VISIT,CHI_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,3)")
+**Assesing the quadratic model** 
+```{r}
+plot(growth)
+qqnorm(residuals(growth))
 ```
 
-**Cubic Model**
-```{r, include = TRUE}
-#^3 
-```
+
 
 
 *Comparing models*
 ```{r, include = TRUE}
-#
+anova(m2, growth)
 ```
 
-xx seems to be the best fit.
+growth seems to be the best fit.
+
+Plotting the actual CHI_MLU data against the predictions of the model fitted(model). 
+```{r}
+df2 <- df[!is.na(df$CHI_MLU), 1:20] 
+
+df3 <- select(df2,  'SUBJ', 'VISIT', 'Diagnosis', 'CHI_MLU')
+
+df3$predicted <- predict(growth)
+df3$residuals <- residuals(growth)
+
+
+
+df3 %>% 
+  gather(key = "iv", value = "x", -CHI_MLU, -predicted, -residuals) %>%
+  ggplot(aes(x = x, y = CHI_MLU)) +
+  geom_segment(aes(xend = x, yend = predicted), alpha = .2) +
+  geom_point(aes(color = residuals)) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  guides(color = FALSE) +
+  geom_point(aes(y = predicted), shape = 1) +
+  facet_grid(~ iv, scales = "free_x") +
+  theme_bw() +
+  xlab('Model predictors') + ylab('Child MLU') + ggtitle('Actual data vs. model prediction values')
+
+
+ggplot(df3, aes(CHI_MLU, predicted)) + geom_point() + geom_smooth(method = lm)
+
+```
+
 
 # Hypothesis 2: The parents's MLU changes: i) over time, ii) according to diagnosis
 
@@ -126,7 +215,7 @@ xx seems to be the best fit.
 #Plotting Mean length utterance for all visits for each diagnosis in linear
 df %>%
   ggplot(aes(x = VISIT, y = MOT_MLU, color = Diagnosis)) +
-    geom_point(stat='summary') + 
+    geom_point() + 
     geom_smooth(method = "lm") 
   
 ```
@@ -134,12 +223,52 @@ df %>%
 *Making a model*
 
 ```{r, include = TRUE}
-#Same as above, just switch CHI_MLU with MOT_MLU
+#null model
+mot_null <- lmerTest::lmer(MOT_MLU ~ 1+(1|SUBJ),
+                      df,
+                     REML = FALSE)
+
+summary(mot_null)
+
+
+mot_m1 <- lmerTest::lmer(MOT_MLU ~ VISIT*Diagnosis+
+             (1+VISIT|SUBJ),
+                      df,
+                     REML = FALSE)
+summary(mot_m1)
+# Only with the interaction effect
+
+mot_m2 <- lmerTest::lmer(MOT_MLU ~ VISIT+Diagnosis+
+             (1+VISIT|SUBJ),
+                      df,
+                     REML = FALSE)
+
+summary(mot_m2)
+mot_m3 <- lmerTest::lmer(MOT_MLU ~ VISIT+(1+VISIT|SUBJ),
+                      df,
+                     REML = FALSE)
+
+summary(mot_m3)
+# VISIT as the only predictor
+
 ```
 
 *Assessing the model*
 ```{r, include = TRUE}
-#
+anova(mot_null, mot_m1, mot_m2, mot_m3)
+
+#Let us check r squared
+r.squaredGLMM(mot_null)
+r.squaredGLMM(mot_m1)
+r.squaredGLMM(mot_m2)
+r.squaredGLMM(mot_m3)
+```
+m2 is the best model when comparing AIC, BIC and logLik scores. 
+
+**Checking the model** 
+```{r}
+plot(mot_m2)
+qqnorm(residuals(mot_m2))
 ```
 
 **Creating growth models**
@@ -151,27 +280,24 @@ qplot(VISIT,MOT_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", form
 
 **Quadratic Model**
 ```{r, include = TRUE}
-#
+mot_growth <- lmerTest::lmer(MOT_MLU ~ Diagnosis+I(VISIT^2)+(1|SUBJ),
+                      df,
+                     REML = FALSE)
+
+summary(mot_growth)
 ```
-
-
-*Visualizing cubic*
-```{r, include = TRUE}
-qplot(VISIT,MOT_MLU, data = df, color = Diagnosis)+stat_smooth(method="lm", formula="y~poly(x,3)")
+**Checking the quadratic model** 
+```{r}
+plot(mot_growth)
+qqnorm(residuals(mot_growth))
 ```
-
-**Cubic Model**
-```{r, include = TRUE}
-#
-```
-
 
 *Comparing models*
 ```{r, include = TRUE}
-#
+anova(mot_m2, mot_growth)
 ```
 
-xx seems to be the best fit.
+m2 seems to be the best fit.
 
 
 #HVAD MANGLER VI??
@@ -182,6 +308,23 @@ xx seems to be the best fit.
 #Make a MAXMAXMAX model and see what fits best
 #I'm thinking VerbalIQ, Socialization, ADOS?, nonverbalIQ, types, tokens are nice !
 #Also as we discussed, Gender and Ethnicity are not great to include because of poor representation in both groups
+
+max_model <- lmerTest::lmer(CHI_MLU ~ VISIT + Diagnosis + nonverbalIQ + Socialization +
+                              (1|SUBJ),
+                            df,
+                            REML = FALSE)
+
+summary(max_model)
+
+library(corrgram)
+
+corrgram(df)
+
+#Red = negative correlation
+#Blue = positive correlation
+
+
+
 
 ```
 
