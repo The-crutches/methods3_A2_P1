@@ -245,10 +245,10 @@ Exciting right? Let's check whether the model is doing an alright job at fitting
 
 plot(growth)
 
-df2 <- na.omit(df$CHI_MLU)
+df1 <- na.omit(df$CHI_MLU)
 df2 <- df[!is.na(df$CHI_MLU), 1:20] 
 
-df3 <- cbind(df2, fit)
+df3 <- cbind(df2, df1)
 
 ```
 
