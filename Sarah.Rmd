@@ -76,7 +76,7 @@ Load necessary libraries : what will you need?
 
 ```{r Load Libraries, include = FALSE}
 library(pacman)
-pacman::p_load(purrr, tidyverse, lme4)
+pacman::p_load(purrr, tidyverse, lme4, MuMIn, effects)
 ```
 
 ### Define your working directory and load the data
@@ -151,12 +151,18 @@ ggplot(df, aes(x = VISIT, y = CHI_MLU)) + geom_point() + geom_smooth(method = 'l
 
 
 
-m0 <- lmer(CHI_MLU ~ VISIT*Diagnosis +(1+Diagnosis|SUBJ), df)
+m0 <- lmer(CHI_MLU ~ VISIT*Diagnosis + verbalIQ1 + (1+VISIT|SUBJ), df)
 
-m0 <- lmer(CHI_MLU ~ VISIT + Diagnosis +(1+Diagnosis|SUBJ), df)
+m1 <- lmer(CHI_MLU ~ VISIT + Diagnosis +(1+Diagnosis|SUBJ), df)
 
-m1 <- lmer(CHI_MLU ~ Diagnosis + VISIT + (1+VISIT|SUBJ), data = df, REML = FALSE)
-summary(m0)
+m2 <- lmer(CHI_MLU ~ Diagnosis + VISIT + (1+VISIT|SUBJ), data = df, REML = FALSE)
+
+m3 <- update(m2, .~. + verbalIQ1)
+
+sumam
+
+plot(effects:: allEffects(m0))
+
 ```
 
 
@@ -237,6 +243,8 @@ growth <- lmer(CHI_MLU ~ VISIT*Diagnosis + (1+VISIT|SUBJ) + I(VISIT^2),
 summary(growth)
 r.squaredGLMM(growth)
 
+plot(effects:: allEffects(growth))
+
 ```
 
 Exciting right? Let's check whether the model is doing an alright job at fitting the data. Plot the actual CHI_MLU data against the predictions of the model fitted(model). 
@@ -284,6 +292,9 @@ a %>%
   xlab('Model predictors') + ylab('Child MLU') + ggtitle('Actual data vs. model prediction values')
 
 
+ggplot(df3, aes(CHI_MLU, fit)) + geom_point() + geom_smooth(method = lm)
+
+plot(growth)
 ```
 
 Now it's time to report our results.

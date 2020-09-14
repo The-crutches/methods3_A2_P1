@@ -144,21 +144,19 @@ ggplot(autism_df, aes(x=SUBJ, y = CHI_MLU)) +
   geom_boxplot()
 
 head(autism_df)
-m0 <- lmerTest::lmer(CHI_MLU ~ Age + Gender + VISIT +Diagnosis + (1|SUBJ), autism_df, REML = F)
+m0 <- lmerTest::lmer(CHI_MLU ~ Age + Gender + VISIT +Diagnosis + (1+ VISIT|SUBJ), autism_df, REML = F)
 #Max model 
   #Age correlates with visit
   #Gender not significant (not equal distributions anyways of F and M)
   #Have to have SUBJ as intercept to account for independence 
 
-m1 <- lmerTest::lmer(CHI_MLU ~ Gender + VISIT*Diagnosis + (1|SUBJ), autism_df, REML = F)
+m1 <- lmerTest::lmer(CHI_MLU ~ Gender + VISIT*Diagnosis + (1+ VISIT|SUBJ), autism_df, REML = F)
 #Gender but i cant add random slope, so maybe just delete gender 
 
 #Best model i think ->
-m2 <- lmerTest::lmer(CHI_MLU ~ VISIT*Diagnosis + (1+ Diagnosis|SUBJ), autism_df, REML = F)
+m2 <- lmerTest::lmer(CHI_MLU ~ VISIT*Diagnosis + (1+ VISIT|SUBJ), autism_df, REML = F)
 
-m3 <- lmerTest::lmer(CHI_MLU ~ VISIT*Diagnosis + (1+ VISIT|SUBJ), autism_df, REML = F)
-
-summary(m2)
+summary(m1)
 #plot(effects::allEffects(timem2))
  
 ```
@@ -172,6 +170,7 @@ r.squaredGLMM(m2)
 r.squaredGLMM(m3)
 #Cant run the anova because of different predictors 
 #anova(m4,m5)
+
 ```
 
 Not too good, right? Let's check whether a growth curve model is better.
@@ -181,10 +180,12 @@ First build the different models, then compare them to see which one is better.
 ```{r ex2 growth curve, include = FALSE}
 m10 <- lmer(CHI_MLU ~ VISIT^2*Diagnosis + (1+Diagnosis|SUBJ), autism_df)
 
-summary(timem2)
 
-MuMIn::r.squaredGLMM(m10)
+model_new <- lmer(CHI_MLU ~ I(VISIT^2)+ VISIT*Diagnosis + (1+I(VISIT^2)|SUBJ), autism_df, REML=F)
 
+summary(model_new)
+r.squaredGLMM(model_new)
+anova(m2, model_new)
 ```
 
 Exciting right? Let's check whether the model is doing an alright job at fitting the data. Plot the actual CHI_MLU data against the predictions of the model fitted(model). 
