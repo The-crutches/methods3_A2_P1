@@ -254,6 +254,10 @@ plot(growth)
 
 df2 <- df[!is.na(df$CHI_MLU), 1:20] 
 
+is.na(df2$nonverbalIQ)
+
+
+is.na(df2$nonverbalIQ)
 
 ```
 
@@ -298,6 +302,19 @@ ggplot(df3, aes(CHI_MLU, residuals)) + geom_point() + geom_smooth(method = lm)
 df3 %>% 
   ggplot(aes(CHI_MLU, residuals, color = Diagnosis)) + 
   geom_line()
+
+p <- ggplot(df3) + 
+  aes(x = VISIT, y = CHI_MLU, color = Diagnosis) +
+  stat_summary(fun.data = mean_se) +
+  labs(caption = "Mean ± SE. N = 65 children.") +
+  stat_summary(aes(y = fitted(growth)), fun.y = mean, geom = "line") + 
+  labs(caption = "Line: Average of model-fitted values. Points: Mean ± SE.")
+p
+
+ggplot(df3, aes(x=VISIT, y=CHI_MLU, color=Diagnosis)) +
+                     stat_summary(fun.data=mean_se, geom="point") +
+                    stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.1) +
+                     stat_summary(aes(y=predict(growth,df3,re.form=NA)), fun.y=mean, geom="line")
 
 ```
 
