@@ -182,28 +182,12 @@ Plotting the actual CHI_MLU data against the predictions of the model fitted(mod
 ```{r}
 df2 <- df[!is.na(df$CHI_MLU), 1:20] 
 
-df3 <- select(df2,  'SUBJ', 'VISIT', 'Diagnosis', 'CHI_MLU')
-
-df3$predicted <- predict(growth)
-df3$residuals <- residuals(growth)
-
-
-
-df3 %>% 
-  gather(key = "iv", value = "x", -CHI_MLU, -predicted, -residuals) %>%
-  ggplot(aes(x = x, y = CHI_MLU)) +
-  geom_segment(aes(xend = x, yend = predicted), alpha = .2) +
-  geom_point(aes(color = residuals)) +
-  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
-  guides(color = FALSE) +
-  geom_point(aes(y = predicted), shape = 1) +
-  facet_grid(~ iv, scales = "free_x") +
-  theme_bw() +
-  xlab('Model predictors') + ylab('Child MLU') + ggtitle('Actual data vs. model prediction values')
-
-
-ggplot(df3, aes(CHI_MLU, predicted)) + geom_point() + geom_smooth(method = lm)
-
+ggplot(df2, aes(x=VISIT, y=CHI_MLU, color=Diagnosis)) +
+  stat_summary(fun.data=mean_se, geom="point") + 
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.1) + 
+  stat_summary(aes(y=predict(growth,df2,re.form=NA)), fun.y=mean, geom="line") +
+  xlab('Visit') + ylab('Child MLU') + ggtitle('Actual data vs. model prediction values')
+  
 ```
 
 

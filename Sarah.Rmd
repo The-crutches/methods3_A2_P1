@@ -155,12 +155,18 @@ m0 <- lmer(CHI_MLU ~ VISIT*Diagnosis + verbalIQ1 + (1+VISIT|SUBJ), df)
 
 m1 <- lmer(CHI_MLU ~ VISIT + Diagnosis +(1+Diagnosis|SUBJ), df)
 
-m2 <- lmer(CHI_MLU ~ Diagnosis*VISIT + (1+VISIT|SUBJ), data = df, REML = FALSE)
+m2 <- lmer(CHI_MLU ~ Diagnosis*VISIT+ I(VISIT^2) + verbalIQ1 +(1|SUBJ), data = df, REML = FALSE)
 
-m3 <- update(m2, .~. + verbalIQ1)
+bmax1 <- lmer(CHI_MLU ~ I(VISIT^2)+VISIT*Diagnosis+ Socialization*Diagnosis + verbalIQ1 +(1|SUBJ), df, REML = F)
 
-plot(effects:: allEffects(m0))
 
+m3 <- update(m2, .~. + Socialization)
+
+plot(effects:: allEffects(m3))
+
+r.squaredGLMM(m2)
+r.squaredGLMM(m3)
+r.squaredGLMM(bmax1)
 ```
 
 
@@ -312,9 +318,14 @@ p <- ggplot(df3) +
 p
 
 ggplot(df3, aes(x=VISIT, y=CHI_MLU, color=Diagnosis)) +
-                     stat_summary(fun.data=mean_se, geom="point") +
-                    stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.1) +
-                     stat_summary(aes(y=predict(growth,df3,re.form=NA)), fun.y=mean, geom="line")
+  stat_summary(fun.data=mean_se, geom="point") + 
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.1) +  stat_summary(aes(y=predict(growth,df3,re.form=NA)), fun.y=mean, geom="line") +
+  xlab('Visit') + ylab('Child MLU') + ggtitle('Actual data vs. model prediction')
+  
+
+
+count(df$Diagnosis)
+  
 
 ```
 
