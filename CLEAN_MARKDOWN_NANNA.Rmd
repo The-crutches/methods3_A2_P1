@@ -281,7 +281,17 @@ qqnorm(residuals(mot_growth))
 anova(mot_m2, mot_growth)
 ```
 
-m2 seems to be the best fit.
+m2 seems to be the best fit. When plotting this model agianst the actual data, it can be seen that their is a linear trend. 
+
+```{r}
+
+ggplot(df2, aes(x=VISIT, y=MOT_MLU, color=Diagnosis)) +
+  stat_summary(fun.data=mean_se, geom="point") + 
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.1) + 
+  stat_summary(aes(y=predict(mot_m2,df2,re.form=NA)), fun.y=mean, geom="line") +
+  xlab('Visit') + ylab('Mother MLU') + ggtitle('Actual data vs. model prediction values')
+```
+
 
 
 #HVAD MANGLER VI??
