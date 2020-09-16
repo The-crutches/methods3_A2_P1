@@ -2,9 +2,7 @@
 title: "Assignment 2 - Language Development in ASD - Part 1 - Explaining development"
 author: "Studygroup 4"
 date: "11/9/2020"
-output:
-  html_document: default
-  pdf_document: default
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
