@@ -4,7 +4,6 @@ author: "Studygroup 4"
 date: "11/9/2020"
 output:
   html_document: default
-  pdf_document: default
   keep_md: TRUE
 ---
 
