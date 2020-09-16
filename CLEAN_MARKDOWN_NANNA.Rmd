@@ -20,7 +20,7 @@ knitr::opts_chunk$set(include = FALSE)
 **Loading usefull packages**
 
 ```{r, include = TRUE}
-pacman::p_load(tidyverse, purrr, ggplot, MuMIn, lmerTest)
+pacman::p_load(tidyverse, purrr, MuMIn, lmerTest)
 ```
 
 
@@ -293,8 +293,6 @@ ggplot(df2, aes(x=VISIT, y=MOT_MLU, color=Diagnosis)) +
 ```
 
 
-
-#HVAD MANGLER VI??
 - Excercise 4: Adding new variables
   *Your task now is to figure out how to best describe the children linguistic trajectory. The dataset contains a bunch of additional demographic, cognitive and clinical variables (e.g.verbal and non-verbal IQ). Try them out and identify the statistical models that best describes your data (that is, the children's MLU). Describe how you selected the best model and send the code to run the model to Victor and Byurakn.*
 
@@ -327,17 +325,17 @@ r.squaredGLMM(bm4)
 ```{r}
 #Making plots to see if we should look for interactions for the predictors and diagnosis 
 
-ggplot(autism_df, aes(x=Socialization, y = CHI_MLU, color = Diagnosis))+
+ggplot(df, aes(x=Socialization, y = CHI_MLU, color = Diagnosis))+
   geom_point()+
   geom_smooth(method = "lm")
   #Seems like an interaction? 
 
-ggplot(autism_df, aes(x=nonverbalIQ, y = CHI_MLU, color = Diagnosis))+
+ggplot(df, aes(x=nonverbalIQ, y = CHI_MLU, color = Diagnosis))+
   geom_point()+
   geom_smooth(method = "lm")
   #No interaction 
 
-ggplot(autism_df, aes(x=verbalIQ, y = CHI_MLU, color = Diagnosis))+
+ggplot(df, aes(x=verbalIQ, y = CHI_MLU, color = Diagnosis))+
   geom_point()+
   geom_smooth(method = "lm")
   #No interaction
@@ -380,10 +378,6 @@ qqnorm(residuals(bmaxv))
   #Normality of residuals seems okay too
 
 ```
-
-In addition to ..., the MLU of the children is also correlated with ...
-Using AIC / nested F-tests as a criterium, we compared models of increasing complexity and found that … [continue]
-
 
 Congrats! You made it to the end :D 
 
